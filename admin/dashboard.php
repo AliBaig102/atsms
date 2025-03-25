@@ -2,265 +2,86 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
-if (strlen($_SESSION['atsmsaid']==0)) {
-  header('location:logout.php');
-  } else{ ?>
+
+if (strlen($_SESSION['atsmsaid']) == 0) {
+    header('location:logout.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
- 
-    <!-- Title Page-->
-    <title>Auto/Taxi Stand Management System || Dashboard</title>
-
-    <!-- Fontfaces CSS-->
-    <link href="css/font-face.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
-    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
-
-    <!-- Bootstrap CSS-->
-    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
-
-    <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
-    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
-    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
-    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
-    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
-    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
-
-    <!-- Main CSS-->
-    <link href="css/theme.css" rel="stylesheet" media="all">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖Ride Hub | Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="animsition">
-    <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
-        
+<body>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <?php
+        include_once 'includes/header.php'
+            ?>
+        <!-- Main Content -->
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <?php include_once 'includes/sidebar.php'; ?>
+            <div class="flex-grow-1 overflow-auto p-4 main-content">
+                <h4 class="mb-4">Dashboard</h4>
 
-        <!-- MENU SIDEBAR-->
-         <?php include_once('includes/sidebar.php');?>
-        <!-- END MENU SIDEBAR-->
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    <?php
+                    // Fetch all required counts in a single optimized query
+                    $query = mysqli_query($con, "
+                            SELECT 
+                                (SELECT COUNT(ID) FROM tblstandentry WHERE DATE(EntryDate) = CURDATE()) AS today_count,
+                                (SELECT COUNT(ID) FROM tblstandentry WHERE DATE(EntryDate) = CURDATE() - INTERVAL 1 DAY) AS yesterday_count,
+                                (SELECT COUNT(ID) FROM tblstandentry WHERE DATE(EntryDate) >= (NOW() - INTERVAL 7 DAY)) AS last7_count,
+                                (SELECT COUNT(ID) FROM tblstandentry) AS total_count,
+                                (SELECT COUNT(ID) FROM tblstandentry WHERE VehicleType = 'Auto') AS auto_count,
+                                (SELECT COUNT(ID) FROM tblstandentry WHERE VehicleType = 'Taxi') AS taxi_count
+                        ");
 
-        <!-- PAGE CONTAINER-->
-        <div class="page-container">
-            <!-- HEADER DESKTOP-->
-            <?php include_once('includes/header.php');?>
-            <!-- HEADER DESKTOP-->
+                    $result = mysqli_fetch_assoc($query);
 
-            <!-- MAIN CONTENT-->
-            <div class="main-content">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
- <?php
-//todays Auto/Taxi Entry
- $query=mysqli_query($con,"select ID from tblstandentry where date(EntryDate)=CURDATE()");
-$count_today_at=mysqli_num_rows($query);
- ?>                       
+                    // Card Data
+                    $cards = [
+                        ["title" => "Today's Entries", "count" => $result['today_count'], "link" => "today-autoortaxi-entry.php", "icon" => "bi bi-taxi-front", "color" => "bg-primary"],
+                        ["title" => "Yesterday's Entries", "count" => $result['yesterday_count'], "link" => "yesterday-autoortaxi-entry.php", "icon" => "bi bi-clock-history", "color" => "bg-secondary"],
+                        ["title" => "Last 7 Days", "count" => $result['last7_count'], "link" => "last7days-autoortaxi-entry.php", "icon" => "bi bi-calendar-week", "color" => "bg-success"],
+                        ["title" => "Total Entries", "count" => $result['total_count'], "link" => "manage-autoortaxi-entry.php", "icon" => "bi bi-bar-chart", "color" => "bg-danger"],
+                        ["title" => "Total Autos", "count" => $result['auto_count'], "link" => "manage-autos-entry.php", "icon" => "bi bi-car-front", "color" => "bg-warning"],
+                        ["title" => "Total Taxis", "count" => $result['taxi_count'], "link" => "manage-taxies-entry.php", "icon" => "bi bi-taxi-front", "color" => "bg-info"]
+                    ];
 
+                    foreach ($cards as $card) {
+                        echo '<div class="col-lg-4 col-md-6 mb-4">';
+                        echo '<a href="' . htmlspecialchars($card["link"]) . '" class="text-decoration-none text-dark">';
+                        echo '<div class="card h-100 shadow-sm border-0">';
+                        echo '<div class="card-body text-center">';
+                        echo '<div class="card-icon ' . htmlspecialchars($card["color"]) . ' text-white rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 24px;">';
+                        echo '<i class="' . htmlspecialchars($card["icon"]) . '"></i>';
+                        echo '</div>';
+                        echo '<h5 class="card-title mb-2">' . htmlspecialchars($card["title"]) . '</h5>';
+                        echo '<p class="card-text fs-4 fw-bold">' . number_format($card["count"]) . '</p>';
+                        echo '</div>';
+                        echo '</div>';
+                        echo '</a>';
+                        echo '</div>';
+                    }
+                    ?>
 
-                        <div class="row m-t-25">
-                            
-                             <div class="col-sm-6 col-lg-4">
-                                <a href="today-autoortaxi-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c1">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                                  <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_today_at?></h2>
-                                                <span>  Today's  Auto/Taxi Entry</span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                    
-                                    </div>
-                                </div>
-                                 </a>
-                            </div>
-                       
- <?php
-//Yesterdays Auto/Taxi Entry
- $query1=mysqli_query($con,"select ID from tblstandentry where date(EntryDate)=CURDATE()-1");
-$count_yesterday_ate=mysqli_num_rows($query1);
- ?>                       
-
-
-                            <div class="col-sm-6 col-lg-4">
-                                <a href="yesterday-autoortaxi-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c2">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                                    <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_yesterday_ate?></h2>
-                                                <span>Yesterday Auto/Taxi Entry</span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                    
-                                    </div>
-                                </div>
-                            </a>
-                            </div>
-
- <?php
-//Last Sevendays Auto/Taxi Entry
- $query2=mysqli_query($con,"select ID from tblstandentry where date(EntryDate)>=(DATE(NOW()) - INTERVAL 7 DAY)");
-$count_lastsevendays_ate=mysqli_num_rows($query2);
- ?>                       
-
-
-                            <div class="col-sm-6 col-lg-4">
-                                      <a href="last7days-autoortaxi-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c3">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                                <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_lastsevendays_ate?></h2>
-                                                <span>Last 7 Days Auto/Taxi Entry</span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                     
-                                    </div>
-                                </div>
-                            </a>
-                            </div>
-                        </div>
-                                    <div class="row m-t-25">
-    <?php
-//Total Auto/Taxi Entry
- $query3=mysqli_query($con,"select ID from tblstandentry");
-$count_total_ate=mysqli_num_rows($query3);
- ?>                       
-
-
-
-
-                            <div class="col-sm-6 col-lg-4">
-                                         <a href="manage-autoortaxi-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c4">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                            <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_total_ate?></h2>
-                                                <span>Total Auto/Taxi Entry  Till Date </span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                   
-                                    </div>
-                                </div></a>
-                            </div>
-
- <?php
-//todays Auto/Taxi Entry
- $query=mysqli_query($con,"select ID from tblstandentry where VehicleType='Auto'");
-$count_autos=mysqli_num_rows($query);
- ?> 
-
-     <div class="col-sm-6 col-lg-4">
-                                <a href="manage-autos-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c1">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                                  <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_autos;?></h2>
-                                                <span>  Total  Autos Entry</span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                    
-                                    </div>
-                                </div>
-                                 </a>
-                            </div>
- <?php
-//todays Auto/Taxi Entry
- $query=mysqli_query($con,"select ID from tblstandentry where VehicleType='Taxi'");
-$count_taxi=mysqli_num_rows($query);
- ?> 
-<div class="col-sm-6 col-lg-4">
-                                <a href="manage-taxies-entry.php" target="_blank">
-                                <div class="overview-item overview-item--c2">
-                                    <div class="overview__inner">
-                                        <div class="overview-box clearfix">
-                                            <div class="icon">
-                                                    <i class="fa fa-taxi" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="text">
-                                                <h2><?php echo $count_taxi?></h2>
-                                                <span>Total Taxies Entry</span>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        </div>
-                                    
-                                    </div>
-                                </div>
-                            </a>
-                            </div>
-
-
-
-
-
-
-                        </div>
-                       
-                   
-<?php include_once('includes/footer.php');?>
-     
-                    </div>
                 </div>
             </div>
-             
         </div>
-
     </div>
-    <!-- Jquery JS-->
-    <script src="vendor/jquery-3.2.1.min.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/slick/slick.min.js">
-    </script>
-    <script src="vendor/wow/wow.min.js"></script>
-    <script src="vendor/animsition/animsition.min.js"></script>
-    <script src="vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
-    </script>
-    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="vendor/counter-up/jquery.counterup.min.js">
-    </script>
-    <script src="vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="vendor/select2/select2.min.js">
-    </script>
 
-    <!-- Main JS-->
-    <script src="js/main.js"></script>
-
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-<!-- end document-->
-<?php } ?>
