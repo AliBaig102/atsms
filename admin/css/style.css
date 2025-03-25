@@ -1,0 +1,36 @@
+body {
+    overflow-x: hidden;
+}
+
+.sidebar {
+    width: 220px;
+    transition: width 0.3s;
+}
+
+.sidebar .nav-link {
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.main-content {
+    /* margin-left: 220px; */
+    transition: margin-left 0.3s;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+    .sidebar .nav-text {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 60px;
+    }
+}
