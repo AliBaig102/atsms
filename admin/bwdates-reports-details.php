@@ -2,159 +2,113 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-if (strlen($_SESSION['atsmsaid']==0)) {
-  header('location:logout.php');
-  } else{
 
+if (!isset($_SESSION['atsmsaid']) || strlen($_SESSION['atsmsaid']) == 0) {
+    header('location:logout.php');
+    exit();
+}
 
+// Ensure the form was submitted with valid dates
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['fromdate']) && isset($_POST['todate'])) {
+    $fdate = htmlspecialchars($_POST['fromdate']);
+    $tdate = htmlspecialchars($_POST['todate']);
 
-  ?>
+    // Validate if both dates are selected
+    if (empty($fdate) || empty($tdate)) {
+        echo "<script>alert('Please select both From and To dates.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Use prepared statements to prevent SQL injection
+    $stmt = $con->prepare("SELECT * FROM tblstandentry WHERE date(EntryDate) BETWEEN ? AND ?");
+    $stmt->bind_param("ss", $fdate, $tdate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    echo "<script>alert('Invalid Access!'); window.location.href='reports.php';</script>";
+    exit();
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  
-    <!-- Title Page-->
-    <title>Auto/Taxi Stand Management System|| Details of Bwdates report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖Ride Hub | Dates Report - Auto/Taxi Stand</title>
 
-    <!-- Fontfaces CSS-->
-    <link href="css/font-face.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
-    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
-
-    <!-- Bootstrap CSS-->
-    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
-
-    <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
-    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
-    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
-    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
-    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
-    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
-
-    <!-- Main CSS-->
-    <link href="css/theme.css" rel="stylesheet" media="all">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <!-- Bootstrap Icons -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 
 </head>
 
-<body class="animsition">
-    <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
-      <?php include_once('includes/sidebar.php');?>
-        <!-- END HEADER MOBILE-->
+<body>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <?php include_once 'includes/header.php'; ?>
+        <!-- Main Content -->
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <?php include_once 'includes/sidebar.php'; ?>
+            <div class="flex-grow-1 overflow-auto p-4 main-content">
+                <h4 class="mb-4">Report</h4>
 
-        <!-- MENU SIDEBAR-->
-      
-        <!-- END MENU SIDEBAR-->
+                <h4 class="text-center">Report from <span class="text-primary"><?php echo date("d-M-Y", strtotime($fdate)); ?></span> to <span class="text-primary"><?php echo date("d-M-Y", strtotime($tdate)); ?></span></h4>
+                <hr>
 
-        <!-- PAGE CONTAINER-->
-        <div class="page-container">
-            <!-- HEADER DESKTOP-->
-            <?php include_once('includes/header.php');?>
-            <!-- END HEADER DESKTOP-->
-
-            <!-- MAIN CONTENT-->
-            <div class="main-content">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="table-responsive table--no-card m-b-30">
-                                    
-<h4 class="m-t-0 header-title">Between Dates Reports</h4>
-                                    <?php
-$fdate=$_POST['fromdate'];
-$tdate=$_POST['todate'];
-
-?>
-
-  
-                                    <table class="table table-borderless table-striped table-earning">
-                                        <h5 align="center" style="color:blue">Report from <?php echo $fdate?> to <?php echo $tdate?></h5>
-<hr />
-                                       <tr>
-                  <th>S.NO</th>
-             <th>Parking Number</th>
-                  <th>Type</th>
-              
-              <th>Driver Name</th>
-              
-              <th>Entry Date</th>
-              <th>Status</th>
-                   <th>Action</th>
-                </tr>
-                                        </thead>
-                                       <?php
-$ret=mysqli_query($con,"select * from tblstandentry where date(EntryDate) between '$fdate' and '$tdate'");
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-
-?>
-              
-                 <tr>
-                  <td><?php echo $cnt;?></td>
-            <td><?php  echo $row['ParkingNumber'];?></td>
-                  <td><?php  echo $row['VehicleType'];?></td>
-                  <td><?php  echo $row['DriverName'];?></td>
-                
-                <td><?php  echo $row['EntryDate'];?></td>
-                <?php if($row['Status']==""){ ?>
-
-                     <td><?php echo "Not Updated Yet"; ?></td>
-<?php } else { ?>                  <td><?php  echo htmlentities($row['Status']);?>
-                  </td>
-                  <?php } ?>         
-                  <td><a href="auto-taxi-entry-detail.php?editid=<?php echo $row['ID'];?>" title="View Full Details" class="btn btn-success">Edit</a> <a href="print.php?vid=<?php echo $row['ID'];?>" style="cursor:pointer" target="_blank" class="btn btn-warning">Print</a> <a href="manage-autoortaxi-entry.php?del=<?php echo $row['ID'];?>" onclick="return confirm('Do you really want to delete the vehicle entry?');" class="btn btn-success">Delete</a>
-                  </td>
-                </tr>
-                
-                <?php 
-$cnt=$cnt+1;
-}?>
-                                    </table>
-                                </div>
-                            </div>
-                          
-                        </div>
-                        
-                        
-          
-<?php include_once('includes/footer.php');?>
-          </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>S.NO</th>
+                                <th>Parking Number</th>
+                                <th>Type</th>
+                                <th>Driver Name</th>
+                                <th>Entry Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $cnt = 1;
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                            ?>
+                                    <tr>
+                                        <td><?php echo $cnt; ?></td>
+                                        <td><?php echo htmlspecialchars($row['ParkingNumber']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['VehicleType']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['DriverName']); ?></td>
+                                        <td><?php echo date("d-M-Y H:i A", strtotime($row['EntryDate'])); ?></td>
+                                        <td>
+                                            <?php echo !empty($row['Status']) ? htmlentities($row['Status']) : "<span class='text-warning'>Not Updated Yet</span>"; ?>
+                                        </td>
+                                        <td>
+                                            <a href="auto-taxi-entry-detail.php?editid=<?php echo $row['ID']; ?>" class="btn btn-success btn-sm">Edit</a>
+                                            <a href="print.php?vid=<?php echo $row['ID']; ?>" target="_blank" class="btn btn-warning btn-sm">Print</a>
+                                            <a href="manage-autoortaxi-entry.php?del=<?php echo $row['ID']; ?>" onclick="return confirm('Do you really want to delete the vehicle entry?');" class="btn btn-danger btn-sm">Delete</a>
+                                        </td>
+                                    </tr>
+                            <?php
+                                    $cnt++;
+                                }
+                            } else {
+                                echo "<tr><td colspan='7' class='text-center text-danger'>No records found for the selected date range.</td></tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
                 </div>
+
             </div>
         </div>
-
     </div>
-    <!-- Jquery JS-->
-    <script src="vendor/jquery-3.2.1.min.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/slick/slick.min.js">
-    </script>
-    <script src="vendor/wow/wow.min.js"></script>
-    <script src="vendor/animsition/animsition.min.js"></script>
-    <script src="vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
-    </script>
-    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="vendor/counter-up/jquery.counterup.min.js">
-    </script>
-    <script src="vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="vendor/select2/select2.min.js">
-    </script>
 
-    <!-- Main JS-->
-    <script src="js/main.js"></script>
-
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-<?php }  ?>
