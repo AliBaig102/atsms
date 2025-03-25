@@ -2,177 +2,106 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
-if (strlen($_SESSION['atsmsaid']==0)) {
-  header('location:logout.php');
-  } else{
-if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['atsmsaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-echo '<script>alert("Your password successully changed.")</script>';
-} else {
 
-echo '<script>alert("Your current password is wrong.")</script>';
+if (strlen($_SESSION['atsmsaid']) == 0) {
+    header('location:logout.php');
+    exit();
 }
 
+if (isset($_POST['submit'])) {
+    $adminid = $_SESSION['atsmsaid'];
+    $currentpassword = $_POST['currentpassword'];
+    $newpassword = $_POST['newpassword'];
 
+    // Fetch current password securely
+    $stmt = $con->prepare("SELECT Password FROM tbladmin WHERE ID = ?");
+    $stmt->bind_param("i", $adminid);
+    $stmt->execute();
+    $stmt->bind_result($db_password);
+    $stmt->fetch();
+    $stmt->close();
 
+    // Verify current password
+    if (password_verify($currentpassword, $db_password)) {
+        // Hash new password
+        $hashed_newpassword = password_hash($newpassword, PASSWORD_BCRYPT);
+
+        // Update password securely
+        $stmt = $con->prepare("UPDATE tbladmin SET Password = ? WHERE ID = ?");
+        $stmt->bind_param("si", $hashed_newpassword, $adminid);
+        if ($stmt->execute()) {
+            echo "<script>alert('Your password has been changed successfully.');</script>";
+        } else {
+            echo "<script>alert('Error updating password. Please try again.');</script>";
+        }
+        $stmt->close();
+    } else {
+        echo "<script>alert('Your current password is incorrect.');</script>";
+    }
 }
+?>
 
-  
-  ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-   
-    <!-- Title Page-->
-    <title>Auto/Taxi Stand Management System || Change Password</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖Ride Hub | Change Password</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 
-    <!-- Fontfaces CSS-->
-    <link href="css/font-face.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
+    <script>
+        function validatePassword() {
+            let newpassword = document.getElementById("newpassword").value;
+            let confirmpassword = document.getElementById("confirmpassword").value;
 
-    <!-- Bootstrap CSS-->
-    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
-
-    <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
-    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
-    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
-    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
-    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
-    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
-
-    <!-- Main CSS-->
-    <link href="css/theme.css" rel="stylesheet" media="all">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
-
-</script>
+            if (newpassword !== confirmpassword) {
+                alert("New Password and Confirm Password do not match!");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 
-<body class="animsition">
-    <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
-        <?php include_once('includes/sidebar.php');?>
-        <!-- END HEADER MOBILE-->
+<body>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <!-- Header -->
+        <?php include_once 'includes/header.php'; ?>
 
-        <!-- MENU SIDEBAR-->
-        
-        <!-- END MENU SIDEBAR-->
-
-        <!-- PAGE CONTAINER-->
-        <div class="page-container">
-            <!-- HEADER DESKTOP-->
-            <?php include_once('includes/header.php');?>
-            <!-- HEADER DESKTOP-->
-
-            <!-- MAIN CONTENT-->
-            <div class="main-content">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                          
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <strong>Change</strong> Admin Password
-                                    </div>
-                                    <div class="card-body card-block">
-                                        <form action="" method="post" enctype="multipart/form-data" class="form-horizontal" name="changepassword" onsubmit="return checkpass();">
-                                            
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="text-input" class=" form-control-label">Current Password</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="password" id="currentpassword" name="currentpassword" value="" class="form-control" required="">
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="email-input" class=" form-control-label">New Password</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="password" id="newpassword" name="newpassword" value="" class="form-control" required="">
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="password-input" class=" form-control-label">Confirm Password</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="password" id="confirmpassword" name="confirmpassword" class="form-control" maxlength="10" value="" required="">
-                                                    
-                                                </div>
-                                            </div>                                     
-                                          
-                                          <div class="card-footer">
-                                        <p style="text-align: center;"><button type="submit" name="submit" id="submit" class="btn btn-primary btn-sm">Change
-                                        </button></p>
-                                        
-                                    </div>
-                                        </form>
-                                    </div>
-                                   
-                                </div>
-                       
-                     
-                        
-     
-<?php include_once('includes/footer.php');?>
-               </div>
+        <!-- Main Content -->
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <?php include_once 'includes/sidebar.php'; ?>
+            <div class="flex-grow-1 overflow-auto p-4 main-content">
+                <h4 class="mb-4">Change Password</h4>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form method="post" onsubmit="return validatePassword();">
+                            <div class="mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" name="currentpassword" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password" id="newpassword" name="newpassword" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" id="confirmpassword" name="confirmpassword" class="form-control" required>
+                            </div>
+                            <button type="submit" name="submit" class="btn btn-primary">Change Password</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-   </div>
     </div>
-    <!-- Jquery JS-->
-    <script src="vendor/jquery-3.2.1.min.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/slick/slick.min.js">
-    </script>
-    <script src="vendor/wow/wow.min.js"></script>
-    <script src="vendor/animsition/animsition.min.js"></script>
-    <script src="vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
-    </script>
-    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="vendor/counter-up/jquery.counterup.min.js">
-    </script>
-    <script src="vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="vendor/select2/select2.min.js">
-    </script>
 
-    <!-- Main JS-->
-    <script src="js/main.js"></script>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-<!-- end document-->
-<?php }  ?>
