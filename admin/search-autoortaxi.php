@@ -1,167 +1,103 @@
 <?php
 session_start();
-error_reporting(0);
 include('includes/dbconnection.php');
-if (strlen($_SESSION['atsmsaid']==0)) {
-  header('location:logout.php');
-  } else{
 
-
-
-  ?>
+if (strlen($_SESSION['atsmsaid']) == 0) {
+    header('location:logout.php');
+    exit();
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖Ride Hub | Search Taxi or Auto</title>
 
-    <!-- Title Page-->
-    <title>Auto/Taxi Stand Management System || Search Taxi or Auto</title>
-
-    <!-- Fontfaces CSS-->
-    <link href="css/font-face.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
-    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
-
-    <!-- Bootstrap CSS-->
-    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
-
-    <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
-    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
-    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
-    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
-    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
-    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
-
-    <!-- Main CSS-->
-    <link href="css/theme.css" rel="stylesheet" media="all">
-
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="animsition">
-    <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
-      <?php include_once('includes/sidebar.php');?>
-        <!-- END HEADER MOBILE-->
+<body>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <!-- Header -->
+        <?php include_once 'includes/header.php'; ?>
 
-        <!-- MENU SIDEBAR-->
-      
-        <!-- END MENU SIDEBAR-->
+        <!-- Main Content -->
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <?php include_once 'includes/sidebar.php'; ?>
+            <div class="flex-grow-1 overflow-auto p-4 main-content">
+                <h4 class="mb-4">Search Taxi or Auto</h4>
 
-        <!-- PAGE CONTAINER-->
-        <div class="page-container">
-            <!-- HEADER DESKTOP-->
-            <?php include_once('includes/header.php');?>
-            <!-- END HEADER DESKTOP-->
-
-            <!-- MAIN CONTENT-->
-            <div class="main-content">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="table-responsive table--no-card m-b-30">
-                                 <?php
-if(isset($_POST['search']))
-{ 
-
-$sdata=$_POST['searchdata'];
-  ?>
-  <h4 align="center">Result against "<?php echo $sdata;?>" keyword </h4>
-  <hr />   
-
-                                    <table class="table table-borderless table-striped table-earning">
-                                         <thead>
-                                        <tr>
-                  <th>S.NO</th>
-             <th>Parking Number</th>
-                  <th>Type</th>
-              
-              <th>Driver Name</th>
-           
-              <th>Entry Date</th>
-              <th>Status</th>
-                   <th>Action</th>
-                </tr>
-                                        </thead>
-                                      <?php
-$ret=mysqli_query($con,"select *from tblstandentry where DriverName like '$sdata%'||Drivermobilenumber like '$sdata%'");
-$num=mysqli_num_rows($ret);
-if($num>0){
-$cnt=1;
-while ($row=mysqli_fetch_array($ret)) {
-
-?>
-
-              
-                  <tr>
-                  <td><?php echo $cnt;?></td>
-            <td><?php  echo $row['ParkingNumber'];?></td>
-                  <td><?php  echo $row['VehicleType'];?></td>
-                  <td><?php  echo $row['DriverName'];?></td>
-                
-                <td><?php  echo $row['EntryDate'];?></td>
-                <?php if($row['Status']==""){ ?>
-
-                     <td><?php echo "Not Updated Yet"; ?></td>
-<?php } else { ?>                  <td><?php  echo htmlentities($row['Status']);?>
-                  </td>
-                  <?php } ?>         
-                  <td><a href="auto-taxi-entry-detail.php?editid=<?php echo $row['ID'];?>" title="View Full Details" class="btn btn-success">Edit</a> <a href="print.php?vid=<?php echo $row['ID'];?>" style="cursor:pointer" target="_blank" class="btn btn-warning">Print</a> <a href="manage-autoortaxi-entry.php?del=<?php echo $row['ID'];?>" onclick="return confirm('Do you really want to delete the vehicle entry?');" class="btn btn-success">Delete</a>
-                  </td>
-                </tr>
-                 <?php
-                $cnt=$cnt+1;
-} } else { ?>
-  <tr>
-    <td colspan="8"> No record found against this search</td>
-
-  </tr>
-   
-<?php } }?>
-                                    </table>
-                                </div>
-                            </div>
-                          
-                        </div>
-                        
-                        
+                <!-- Search Form -->
+                <form method="post" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="searchdata" class="form-control" placeholder="Enter Driver Name or Mobile Number..." required>
+                        <button type="submit" name="search" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
                     </div>
-                </div>
+                </form>
+
+                <?php
+                if (isset($_POST['search'])) {
+                    $sdata = $_POST['searchdata'];
+                    echo '<h5 class="text-center text-secondary">Results for "<strong>' . htmlspecialchars($sdata) . '</strong>"</h5>';
+                    echo '<hr>';
+
+                    // Secure search query using prepared statements
+                    $stmt = $con->prepare("SELECT * FROM tblstandentry WHERE DriverName LIKE ? OR Drivermobilenumber LIKE ?");
+                    $searchTerm = "%$sdata%";
+                    $stmt->bind_param("ss", $searchTerm, $searchTerm);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    if ($result->num_rows > 0) {
+                        echo '<table class="table table-bordered table-striped">';
+                        echo '<thead class="table-dark">';
+                        echo '<tr>
+                                <th>S.No</th>
+                                <th>Parking Number</th>
+                                <th>Type</th>
+                                <th>Driver Name</th>
+                                <th>Entry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>';
+                        echo '</thead><tbody>';
+
+                        $cnt = 1;
+                        while ($row = $result->fetch_assoc()) {
+                            echo '<tr>
+                                    <td>' . $cnt . '</td>
+                                    <td>' . htmlspecialchars($row['ParkingNumber']) . '</td>
+                                    <td>' . htmlspecialchars($row['VehicleType']) . '</td>
+                                    <td>' . htmlspecialchars($row['DriverName']) . '</td>
+                                    <td>' . date("m/d/Y", strtotime($row['EntryDate'])) . '</td>
+                                    <td>' . ($row['Status'] ? htmlspecialchars($row['Status']) : 'Not Updated Yet') . '</td>
+                                    <td>
+                                        <a href="auto-taxi-entry-detail.php?editid=' . $row['ID'] . '" class="btn btn-success btn-sm">Edit</a>
+                                        <a href="print.php?vid=' . $row['ID'] . '" class="btn btn-warning btn-sm" target="_blank">Print</a>
+                                        <a href="manage-autoortaxi-entry.php?del=' . $row['ID'] . '" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure you want to delete this entry?\');">Delete</a>
+                                    </td>
+                                  </tr>';
+                            $cnt++;
+                        }
+                        echo '</tbody></table>';
+                    } else {
+                        echo '<p class="text-center text-danger">No record found for "<strong>' . htmlspecialchars($sdata) . '</strong>".</p>';
+                    }
+                    $stmt->close();
+                }
+                ?>
             </div>
         </div>
-
     </div>
-<?php include_once('includes/footer.php');?>
-    <!-- Jquery JS-->
-    <script src="vendor/jquery-3.2.1.min.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/slick/slick.min.js">
-    </script>
-    <script src="vendor/wow/wow.min.js"></script>
-    <script src="vendor/animsition/animsition.min.js"></script>
-    <script src="vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
-    </script>
-    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="vendor/counter-up/jquery.counterup.min.js">
-    </script>
-    <script src="vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="vendor/select2/select2.min.js">
-    </script>
 
-    <!-- Main JS-->
-    <script src="js/main.js"></script>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-<?php }  ?>
