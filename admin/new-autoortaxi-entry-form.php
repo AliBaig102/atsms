@@ -2,186 +2,106 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-if (strlen($_SESSION['atsmsaid']==0)) {
-  header('location:logout.php');
-  } else{
-    if(isset($_POST['submit']))
-  {
 
-$parkingnumber=mt_rand(100000000, 999999999);
- $vehtype=$_POST['vehtype'];
- $drivername=$_POST['drivername'];
-$mobnumber=$_POST['mobilenumber'];
-$licensenumber=$_POST['licensenumber'];
-$registrationnumber=$_POST['registrationnumber'];
-
- $query=mysqli_query($con,"insert into tblstandentry(ParkingNumber,VehicleType,DriverName,Drivermobilenumber,Driverlicensenumber,Vehicleregistrationnumber) value('$parkingnumber','$vehtype','$drivername','$mobnumber','$licensenumber','$registrationnumber')");
-
-    if ($query) {
-    
-    echo '<script>alert("Auto/Taxi Detail has been added.")</script>';
-    echo "<script>window.location.href ='new-autoortaxi-entry-form.php'</script>";
-  }
-  else
-    {
-       echo '<script>alert("Something Went Wrong. Please try again.")</script>';
-    }
-
-  
+if (strlen($_SESSION['atsmsaid']) == 0) {
+    header('location:logout.php');
+    exit();
 }
 
+if (isset($_POST['submit'])) {
+    $parkingnumber = mt_rand(100000000, 999999999);
+    $vehtype = $_POST['vehtype'];
+    $drivername = $_POST['drivername'];
+    $mobnumber = $_POST['mobilenumber'];
+    $licensenumber = $_POST['licensenumber'];
+    $registrationnumber = $_POST['registrationnumber'];
+
+    $query = mysqli_query($con, "INSERT INTO tblstandentry (ParkingNumber, VehicleType, DriverName, Drivermobilenumber, Driverlicensenumber, Vehicleregistrationnumber) 
+            VALUES ('$parkingnumber','$vehtype','$drivername','$mobnumber','$licensenumber','$registrationnumber')");
+
+    if ($query) {
+        echo '<script>alert("Auto/Taxi Entry Added Successfully!"); window.location.href="new-autoortaxi-entry-form.php";</script>';
+    } else {
+        echo '<script>alert("Something Went Wrong! Please Try Again.");</script>';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖 Ride Hub | New Entry</title>
 
-    <!-- Title Page-->
-    <title>Auto/Taxi Stand Management System || Entry Forms</title>
-
-    <!-- Fontfaces CSS-->
-    <link href="css/font-face.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
-    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
-
-    <!-- Bootstrap CSS-->
-    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
-
-    <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
-    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
-    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
-    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
-    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
-    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
-
-    <!-- Main CSS-->
-    <link href="css/theme.css" rel="stylesheet" media="all">
-
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="animsition">
-    <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
-        <?php include_once('includes/sidebar.php');?>
-   
-        <div class="page-container">
-            <!-- HEADER DESKTOP-->
-            <?php include_once('includes/header.php');?>
-            <!-- HEADER DESKTOP-->
+<body>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <!-- Header -->
+        <?php include_once('includes/header.php'); ?>
 
-            <!-- MAIN CONTENT-->
-            <div class="main-content">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                          
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <strong>Add</strong> Tax/Auto Entry
-                                    </div>
-                                    <div class="card-body card-block">
-                                        <form action="" method="post" enctype="multipart/form-data" class="form-horizontal">
-                                            
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="text-input" class=" form-control-label">Type</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <select type="text" id="vehtype" name="vehtype" class="form-control" required="true">
-                                                        <option value="">Choose Type</option>
-                                                        <option value="Auto">Auto</option>
-                                                        <option value="Taxi">Taxi</option>
-                                                    </select>
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="text-input" class=" form-control-label">Driver Name</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="text" id="drivername" name="drivername" placeholder="Enter Driver Name" class="form-control" required="true">
-                                                    
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="password-input" class=" form-control-label">Driver Phone Number</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="text" id="mobilenumber" name="mobilenumber" placeholder="Mobile Number" class="form-control" maxlength="10" pattern="[0-9]+" required="true">
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="password-input" class=" form-control-label">License Number</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="text" id="licensenumber" name="licensenumber" placeholder="License Number" class="form-control" required="true">
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="row form-group">
-                                                <div class="col col-md-3">
-                                                    <label for="password-input" class=" form-control-label">Registration Number</label>
-                                                </div>
-                                                <div class="col-12 col-md-9">
-                                                    <input type="text" id="registrationnumber" name="registrationnumber" placeholder="Registration Number" class="form-control" required="true">
-                                                    
-                                                </div>
-                                            </div>
-                                          <div class="card-footer">
-                                        <p style="text-align: center;"><button type="submit" name="submit" id="submit" class="btn btn-primary btn-sm">Add
-                                        </button></p>
-                                        
-                                    </div>
-                                        </form>
-                                    </div>
-                                   
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <!-- Sidebar -->
+            <?php include_once('includes/sidebar.php'); ?>
+
+            <div class="flex-grow-1 overflow-auto p-4">
+                <h4 class="mb-4">New Auto/Taxi Entry</h4>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <form method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="vehtype" class="form-label">Vehicle Type</label>
+                                    <select class="form-select" id="vehtype" name="vehtype" required>
+                                        <option value="">Choose Type</option>
+                                        <option value="Auto">Auto</option>
+                                        <option value="Taxi">Taxi</option>
+                                    </select>
                                 </div>
-                       
-                        </div>
-                        
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="drivername" class="form-label">Driver Name</label>
+                                    <input type="text" class="form-control" id="drivername" name="drivername" placeholder="Enter Driver Name" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="mobilenumber" class="form-label">Driver Phone Number</label>
+                                    <input type="text" class="form-control" id="mobilenumber" name="mobilenumber" placeholder="Mobile Number" pattern="[0-9]{10}" maxlength="10" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="licensenumber" class="form-label">License Number</label>
+                                    <input type="text" class="form-control" id="licensenumber" name="licensenumber" placeholder="License Number" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="registrationnumber" class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="registrationnumber" name="registrationnumber" placeholder="Registration Number" required>
+                                </div>
+
+                                <div class="col-12 text-center mt-3">
+                                    <button type="submit" name="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Add Entry
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-               
- 
-<?php include_once('includes/footer.php');?>
-   </div> </div>
+                </div>
             </div>
         </div>
-</div>
-    <!-- Jquery JS-->
-    <script src="vendor/jquery-3.2.1.min.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/slick/slick.min.js">
-    </script>
-    <script src="vendor/wow/wow.min.js"></script>
-    <script src="vendor/animsition/animsition.min.js"></script>
-    <script src="vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
-    </script>
-    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="vendor/counter-up/jquery.counterup.min.js">
-    </script>
-    <script src="vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="vendor/select2/select2.min.js">
-    </script>
-
-    <!-- Main JS-->
-    <script src="js/main.js"></script>
-
+    </div>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-<!-- end document-->
-<?php }  ?>
